@@ -1,0 +1,31 @@
+#!/bin/bash
+
+$WINETRICKS --unattended dotnet452 vcrun2010 corefonts
+
+INSTALL_URL="https://download.garmin.com/omt/express/GarminExpress.exe"
+
+# If we've been given and installer URL derive the filename
+if [ -n "${INSTALL_URL}" ]; then
+  INSTALL_EXE=$(basename "${INSTALL_URL}")
+fi
+
+function install_de() {
+    # Modify or remove this as required by your application.
+  if [ -n "${INSTALL_URL_DE}" ]; then
+    # Downloads a file with progress using wget and yad
+    wget "${INSTALL_URL_DE}" -O "${TMPDIR}/${INSTALL_EXE}" 2>&1 | \
+    perl -p -e '$| = 1; s/^.* +([0-9]+%) +([0-9,.]+[GMKB]) +([0-9hms,.]+).*$/\1\n# Downloading... \2 (\3)/' | \
+    yad --progress --title="${INSTALL_EXE_DE}" --width=400 --center --no-buttons --auto-close --auto-kill --on-top --no-escape
+
+    # Installs the application
+    wine "${TMPDIR}/${INSTALL_EXE}.exe" /sAll
+    # set prefix os to xp
+    $WINETRICKS --unattended win7
+    # Remove the cached installers & files
+    rm -v "${TMPDIR}/${INSTALL_EXE}" 2>/dev/null
+    rm -rf "${XDG_CACHE_HOME}/winetricks" 2>/dev/null
+    rm -rf "$progSetup"
+  fi
+}
+
+eval install 2>/dev/null

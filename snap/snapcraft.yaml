@@ -1,0 +1,75 @@
+name: connect
+title: Garmin Connect (WINE)
+version: '0.1'
+summary: Adobe Acrobat Reader is a pdf reader & Web services developed by Adobe Inc.
+description: |
+  Adobe Acrobat Reader DC software is the free global standard for reliably viewing, printing, and commenting on PDF documents.
+
+  And now, it's connected to the Adobe Document Cloud − making it easier than ever to work across computers and mobile devices.
+
+  It's the only PDF viewer that can open and interact with all types of PDF content, including forms and multimedia.
+
+grade: stable
+confinement: strict
+architectures:
+  - build-on: amd64
+    run-on: [amd64, i386]
+base: core18
+
+plugs:
+  wine-runtime:
+    interface: content
+    target: $SNAP/wine-runtime
+    default-provider: wine-platform-runtime
+  wine-5-stable:
+    interface: content
+    target: $SNAP/wine-platform
+    default-provider: wine-platform-5-stable
+
+environment:
+  WINEARCH: "win32"
+  WINEDLLOVERRIDES: "mscoree,mshtml="   # Prevent pop-ups about Wine Mono and Wine Gecko
+
+apps:
+  connect:
+    extensions: [ gnome-3-28 ]
+    command: bin/sommelier run-exe
+    environment:
+      RUN_EXE: "C:/Program Files/Garmin/Express/express.exe"
+    plugs:
+      - cups-control
+      - home
+      - network
+      - removable-media
+      - opengl
+
+  wine:
+    extensions: [ gnome-3-28 ]
+    command: bin/sommelier
+    plugs:
+      - home
+      - network
+  winetricks:
+    extensions: [ gnome-3-28 ]
+    command: bin/sommelier winetricks
+    plugs:
+      - network
+
+parts:
+  connect:
+    plugin: nil
+    source: ./snap/local/src
+    override-build: |
+      snapcraftctl build
+      mkdir -p sommelier/hooks ; mv pre-install sommelier/hooks ; cp -R -p sommelier $SNAPCRAFT_PART_INSTALL
+    stage:
+      - sommelier
+    build-packages:
+      - wget
+
+  # The sommelier script helps you snap Windows applications using Wine. It 
+  # initializes and configures Wine and installs the Windows application.
+  sommelier:
+    plugin: make
+    source: https://github.com/mmtrt/sommelier-core.git
+    source-branch: "winetricks-fix-patch"

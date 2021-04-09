@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=Garmin Connect
+Comment=
+Exec=connect
+Icon=${SNAP}/meta/gui/connect.png
+Categories=Graphics;Office;Viewer;
+Terminal=false
+StartupNotify=true
+
